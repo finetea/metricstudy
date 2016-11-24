@@ -42,25 +42,44 @@ head(tmp1)
 # tmp2 <- 
 # tmp3 <-
 # tmp4 <- sqldf()
+
 colnames(result)
 mart <- sqldf("select a.class, b.* from result a, tmp1 b where a.code=b.code and a.name=b.name")
 colnames(mart)
+ind <- sample(2,nrow(mart),replace=TRUE,prob=c(0.7,0.3))
+tr <- mart[ind==1,]
+ts <- mart[ind==2,]
 library(rpart)
 library(partykit)
-rpp1 <- rpart(class~.,data=mart[,-c(2,3)],parms=list(prior=c(0.5,0.5)),cp=0.01)
+rpp1 <- rpart(class~.,data=tr[,-c(2,3)],parms=list(prior=c(0.5,0.5)),cp=0.01)
 plot(as.party(rpp1))
-table(predict(rpp1,type="class"),mart$class)
-(503+583)/(503+583+181+512)# 61
-583/(512+583) # 53 pre
-583/(583+181) # 76 recall
-53/42 # 1.26
-final <- cbind(mart,rpp1=predict(rpp1,type="class"),rpp1prob=predict(rpp1))
+table(predict(rpp1,type="class"),tr$class)
+367/(245+367) # 59
+table(predict(rpp1,type="class",newdata=ts),ts$class)
+117/(117+126) # 48
+library(doParallel)
+registerDoParallel(8)
+library(caret)
+system.time(rf1 <- train(class~.,data=tr[,-c(2,3)],method="rf",tuneLength=7))
+plot(rf1) 
+confusionMatrix(rf1)
+vi <- varImp(rf1)
+plot(vi)
+table(predict(rf1,newdata=ts),ts$class)
+95/(95+95)
+system.time(svm1 <- train(class~.,data=tr[,-c(2,3)],method="svmRadial"))
+plot(svm1) 
+confusionMatrix(svm1)
+vi <- varImp(svm1)
+plot(vi)
+table(predict(svm1,newdata=ts),ts$class)
+41/(41+32) # 56
+final <- cbind(ts,rpp1=predict(rpp1,type="class",newdata=ts),rpp1prob=predict(rpp1,newdata=ts),rf1=predict(rf1,type="raw",newdata=ts),rf1prob=predict(rf1,type="prob",newdata=ts),svm1=predict(svm1,type="raw",newdata=ts))
 colnames(final)
 head(final)
-sqldf("select name,rpp1,class,[rpp1prob.yes] from final where [rpp1prob.yes]>0.7")
-sqldf("select class, rpp1, count(*) cnt from (select name,class,rpp1,[rpp1prob.yes] rpp1yes from final where [rpp1prob.yes]>0.7) group by class,rpp1")
-43/(43+15)
-74/42
+sqldf("select class, rpp1, count(*) cnt from (select name,class, rpp1,[rpp1prob.yes],rf1,[rf1prob.yes] from final where [rpp1prob.yes]>0.7 and [rf1prob.yes]>0.7 and svm1='yes') group by class,rpp1")
+11/(11+6) # 64
+5/5 # 100
 
 library(doParallel)
 registerDoParallel(7)
@@ -70,6 +89,32 @@ plot(rf1)
 vi <- varImp(rf1)
 plot(vi)
 table(predict(rf1),mart$class)
+
+
+
+
+
+
+data(stock)
+colnames(stock)
+NROW(stock)
+stock_max<-aggregate(stock$Close, list(stock$code), FUN='max')
+stock_mean<-aggregate(stock$Close, list(stock$code), FUN='mean')
+head(stock_max)
+head(stock_mean)
+stock_m <- merge(stock_max, stock_mean, by = 'Group.1')
+head(stock_m)
+.
+
+
+
+
+
+
+
+
+
+
 
 
 
