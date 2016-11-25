@@ -104,13 +104,19 @@ corrgram(train[,corr.var], order=FALSE, lower.panel=panel.conf, upper.panel=pane
 
 summary(train)
 
+library(tabplot)
+
+tableplot(train, cex=1.5)
+
+
+
 #rf1 <- train(income~age+education+education_num+marital_status+relationship+sex+capital_gain+capital_loss+hours_per_week, data=ts.train, method="rf")
-rf1 <- train(income~education_num+marital_status+relationship+sex+capital_gain+hours_per_week, data=ts.train, method="rf")
+rf1 <- train(income~education_num+marital_status+relationship+sex+capital_gain+hours_per_week, data=ts.train, method="rpart")
 
 
+plot(rf1)
 
-
-
+confusionMatrix(predict(rf1, ts.test), ts.test$income)
 
 
 
