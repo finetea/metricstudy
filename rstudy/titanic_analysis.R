@@ -1,5 +1,3 @@
-ls()
-
 library(caret)
 library(rpart)
 library(partykit)

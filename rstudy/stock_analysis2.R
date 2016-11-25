@@ -128,3 +128,36 @@ dat <- data.frame(x = rnorm(10, 30, .2),
 dat
 
 dat %>% mutate_each_(funs(scale),vars=c("y","z")) 
+
+
+
+
+
+
+
+
+
+
+
+#my analysis
+library(caret)
+library(plyr)
+library(reshape2)
+library(reshape)
+setwd("D:\\work\\metricstudy\\rstudy")
+rm(list=ls())
+load("stock.rdata")
+ls()
+colnames(stock)
+head(stock)
+stock$name <- iconv(stock$name,"UTF8","CP949")
+str(stock)
+head(stock)
+min(stock$date);max(stock$date)
+class(stock)
+NROW(stock)
+
+
+stock2 <- stock[date >= "20140601" && date <= "20140831",]
+
+cast(data=stock, code ~ Close, fun=max)

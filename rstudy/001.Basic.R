@@ -464,3 +464,11 @@ attributes(tmp2)
 attributes(aqm)
 
 
+
+
+
+ga.data <- read.csv('http://babelgraph.org/data/ga_edgelist.csv', header = T)
+plot(ga.data)
+
+library(igraph)
+g<-graph.adjacency(ga.data, mode="undirected")
